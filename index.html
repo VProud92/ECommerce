@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Accessories Store</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+    <!-- Header / Navbar -->
+    <header class="bg-blue-600 text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold">📱 Mobile Accessories Hub</h1>
+            <div class="flex items-center space-x-2">
+                <span id="cart-count" class="bg-white text-blue-600 font-bold px-3 py-1 rounded-full text-sm">Cart: 0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Products Section (2 Columns) -->
+        <div class="md:col-span-2">
+            <h2 class="text-xl font-bold mb-4 border-b pb-2">Available Products</h2>
+            <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Products will be loaded here via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Shopping Cart & Checkout Section (1 Column) -->
+        <div class="bg-white p-6 rounded-lg shadow-md h-fit sticky top-24">
+            <h2 class="text-xl font-bold mb-4 border-b pb-2">Your Shopping Cart</h2>
+            <div id="cart-items" class="space-y-4 mb-4 max-h-60 overflow-y-auto">
+                <p class="text-gray-500 text-sm">Your cart is empty.</p>
+            </div>
+            <div class="border-t pt-4 mb-4 flex justify-between font-bold text-lg">
+                <span>Total:</span>
+                <span id="cart-total">Rs. 0</span>
+            </div>
+
+            <!-- Customer Details Form -->
+            <div class="space-y-3 mb-4">
+                <input type="text" id="cust-name" placeholder="Your Name" class="w-full border p-2 rounded text-sm">
+                <input type="text" id="cust-phone" placeholder="WhatsApp Number" class="w-full border p-2 rounded text-sm">
+                <textarea id="cust-address" placeholder="Delivery Address" class="w-full border p-2 rounded text-sm" rows="2"></textarea>
+            </div>
+
+            <button onclick="sendWhatsAppOrder()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded transition">
+                Order via WhatsApp 🚀
+            </button>
+        </div>
+
+    </main>
+
+    <!-- JavaScript for Dynamic Store & Cart -->
+    <script>
+        // Sample Products (آپ یہاں گوگل ڈرائیو کے ڈائریکٹ امیজ لنکس استعمال کر سکتے ہیں)
+        const products = [
+            { id: 1, name: "Fast USB-C Charger", price: 1200, image: "https://lh3.googleusercontent.com/d/YOUR_FILE_ID_1" },
+            { id: 2, name: "Braided Charging Cable", price: 450, image: "https://lh3.googleusercontent.com/d/YOUR_FILE_ID_2" },
+            { id: 3, name: "Wireless Bluetooth Earbuds", price: 2500, image: "https://lh3.googleusercontent.com/d/YOUR_FILE_ID_3" },
+            { id: 4, name: "Transparent Silicone Case", price: 350, image: "https://lh3.googleusercontent.com/d/YOUR_FILE_ID_4" }
+        ];
+
+        let cart = [];
+
+        // Render Products on Page
+        function renderProducts() {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
+            products.forEach(product => {
+                productList.innerHTML += `
+                    <div class="bg-white p-4 rounded-lg shadow-md flex flex-col justify-between">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-40 object-cover rounded mb-4 bg-gray-200" onerror="this.src='https://via.placeholder.com/150?text=Product+Image'">
+                        <h3 class="font-bold text-lg mb-1">${product.name}</h3>
+                        <p class="text-blue-600 font-semibold mb-4">Rs. ${product.price}</p>
+                        <button onclick="addToCart(${product.id})" class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm transition">
+                            Add to Cart
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        // Add to Cart Function
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const cartItem = cart.find(item => item.id === productId);
+            if (cartItem) {
+                cartItem.qty++;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            updateCartUI();
+        }
+
+        // Update Cart Interface
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const cartTotal = document.getElementById('cart-total');
+
+            cartItemsContainer.innerHTML = '';
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `<p class="text-gray-500 text-sm">Your cart is empty.</p>`;
+                cartCount.innerText = `Cart: 0`;
+                cartTotal.innerText = `Rs. 0`;
+                return;
+            }
+
+            let total = 0;
+            let totalQty = 0;
+
+            cart.forEach((item, index) => {
+                total += item.price * item.qty;
+                totalQty += item.qty;
+                cartItemsContainer.innerHTML += `
+                    <div class="flex justify-between items-center text-sm border-b pb-2">
+                        <div>
+                            <p class="font-bold">${item.name}</p>
+                            <p class="text-gray-500">Rs. ${item.price} x ${item.qty}</p>
+                        </div>
+                        <button onclick="removeItem(${index})" class="text-red-500 font-bold hover:underline">Remove</button>
+                    </div>
+                `;
+            });
+
+            cartCount.innerText = `Cart: ${totalQty}`;
+            cartTotal.innerText = `Rs. ${total}`;
+        }
+
+        // Remove Item from Cart
+        function removeItem(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        // Send WhatsApp Order
+        function sendWhatsAppOrder() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const address = document.getElementById('cust-address').value.trim();
+
+            if (!name || !phone || !address) {
+                alert("Please fill in all customer details (Name, Phone, Address)!");
+                return;
+            }
+
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+
+            let message = `*New Order Received!*\n\n*Customer Name:* ${name}\n*Phone:* ${phone}\n*Address:* ${address}\n\n*Items Ordered:*\n`;
+            let total = 0;
+
+            cart.forEach(item => {
+                message += `- ${item.name} (${item.qty}x) = Rs. ${item.price * item.qty}\n`;
+                total += item.price * item.qty;
+            });
+
+            message += `\n*Total Amount:* Rs. ${total}\n*Payment Method:* Cash on Delivery`;
+
+            // آپ یہاں اپنا واٹس ایپ نمبر لکھ سکتے ہیں (بغیر پلس کے، مثلاً 923001234567)
+            const ownerWhatsAppNumber = "923001234567"; 
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/${ownerWhatsAppNumber}?text=${encodedMessage}`, '_blank');
+        }
+
+        // Initialize Store on Load
+        renderProducts();
+    </script>
+</body>
+</html>
